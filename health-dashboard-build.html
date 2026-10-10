@@ -1,0 +1,291 @@
+<title>Oliver's Health Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a single signal trace runs down the page — wrist at the top, web page at the bottom — and every section hangs off it. */
+:root {
+  --bg: #f3f5f4;
+  --surface: #ffffff;
+  --ink: #15201d;
+  --muted: #5b6a65;
+  --line: #d9e0dd;
+  --pulse: #e2513c;      /* heart-rate red: the one bold colour */
+  --pulse-soft: #fbe4df;
+  --cloud: #2f7d6d;      /* cloud-side steps */
+  --cloud-soft: #dcefe9;
+  --phone: #6a5ad1;      /* phone-side steps */
+  --phone-soft: #e7e3fa;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1513; --surface: #17201d; --ink: #e8efec; --muted: #94a39e; --line: #2a3632;
+    --pulse: #ff7a63; --pulse-soft: #3a1f1a; --cloud: #5ec2ab; --cloud-soft: #17332c;
+    --phone: #a79bff; --phone-soft: #262142; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1513; --surface: #17201d; --ink: #e8efec; --muted: #94a39e; --line: #2a3632;
+  --pulse: #ff7a63; --pulse-soft: #3a1f1a; --cloud: #5ec2ab; --cloud-soft: #17332c;
+  --phone: #a79bff; --phone-soft: #262142; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.6 var(--body); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 72px; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.1; text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(26px, 4vw, 36px); font-weight: 700; letter-spacing: -0.01em; }
+h3 { font-size: 19px; font-weight: 700; }
+p { margin: 0; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--muted); max-width: 62ch; }
+code, .mono { font-family: var(--mono); font-size: 0.88em; }
+section { display: grid; gap: 22px; padding-block: 44px; border-top: 1px solid var(--line); }
+section > header { display: grid; gap: 10px; }
+
+/* ---------- hero ---------- */
+.hero { display: grid; gap: 24px; padding-block: 8px 36px; }
+.hero h1 { font-size: clamp(40px, 8vw, 84px); font-weight: 800; letter-spacing: -0.03em; }
+.hero h1 span { color: var(--pulse); }
+.hero .lede { font-size: 18px; }
+.trace { width: 100%; height: auto; display: block; max-width: 100%; }
+.trace path { fill: none; stroke: var(--pulse); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 1400; stroke-dashoffset: 0; animation: draw 2.4s ease-out both; }
+.trace .base { stroke: var(--line); stroke-width: 1.5; animation: none; }
+@keyframes draw { from { stroke-dashoffset: 1400; } to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .trace path { animation: none; } }
+.facts { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); font: 500 13px/1.3 var(--mono); color: var(--ink); }
+.chip i { width: 8px; height: 8px; border-radius: 50%; background: var(--pulse); display: inline-block; }
+
+/* ---------- pipeline ---------- */
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font: 500 13px var(--mono); color: var(--muted); }
+.legend b { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.pipe { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: stop; }
+.stop { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 16px; position: relative; padding-bottom: 22px; }
+.stop:last-child { padding-bottom: 0; }
+.stop::before { counter-increment: stop; content: counter(stop); display: grid; place-items: center;
+  width: 44px; height: 44px; border-radius: 50%; font: 600 15px var(--mono); background: var(--k-soft); color: var(--k); border: 2px solid var(--k); position: relative; z-index: 1; }
+.stop::after { content: ""; position: absolute; left: 21px; top: 44px; bottom: 0; width: 2px; background: var(--line); }
+.stop:last-child::after { display: none; }
+.stop > div { display: grid; gap: 4px; padding-top: 9px; min-width: 0; }
+.stop .where { font: 500 12px var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--k); }
+.stop p { color: var(--muted); max-width: 64ch; }
+.k-watch { --k: var(--pulse); --k-soft: var(--pulse-soft); }
+.k-phone { --k: var(--phone); --k-soft: var(--phone-soft); }
+.k-cloud { --k: var(--cloud); --k-soft: var(--cloud-soft); }
+
+/* ---------- timeline ---------- */
+.timeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.moment { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 8px; align-content: start; }
+.moment .when { font: 500 12px var(--mono); color: var(--pulse); letter-spacing: 0.04em; }
+.moment p { color: var(--muted); font-size: 15px; }
+
+/* ---------- files ---------- */
+.files { display: grid; gap: 12px; }
+.file { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; align-items: start;
+  padding: 18px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); }
+.file.current { border: 2px solid var(--pulse); }
+.file .name { font: 600 17px var(--mono); overflow-wrap: anywhere; }
+.file p { grid-column: 1 / -1; color: var(--muted); max-width: 70ch; }
+.status { font: 500 12px var(--mono); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.status.live { background: var(--pulse-soft); color: var(--pulse); }
+.status.old { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.file ul { grid-column: 1 / -1; margin: 4px 0 0; padding-left: 18px; color: var(--ink); display: grid; gap: 4px; font-size: 15px; }
+
+/* ---------- features ---------- */
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px 32px; }
+.feature { display: grid; gap: 6px; align-content: start; }
+.feature p { color: var(--muted); }
+.feature .tag { font: 500 12px var(--mono); color: var(--cloud); }
+
+/* ---------- preview ---------- */
+.preview { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 14px; }
+.preview .top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: baseline; }
+.stats { display: flex; flex-wrap: wrap; gap: 26px; }
+.stats div { display: grid; gap: 2px; font-size: 13px; color: var(--muted); }
+.stats b { font: 700 24px var(--display); color: var(--ink); font-variant-numeric: tabular-nums; }
+.bars-wrap { overflow-x: auto; }
+.bars { width: 100%; min-width: 320px; height: auto; display: block; }
+.bars text { fill: var(--muted); font: 11px var(--mono); }
+.bars .grid { stroke: var(--line); stroke-width: 1; }
+.bars rect { fill: var(--cloud); }
+.bars rect.today { fill: var(--pulse); }
+.example { font: 500 12px var(--mono); color: var(--muted); }
+
+/* ---------- checklist ---------- */
+.steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; counter-reset: s; }
+.steps li { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 12px; align-items: start; }
+.steps li::before { counter-increment: s; content: counter(s); font: 600 14px var(--mono); color: var(--pulse);
+  border: 1.5px solid var(--pulse); border-radius: 8px; width: 32px; height: 32px; display: grid; place-items: center; }
+.steps li div { padding-top: 4px; min-width: 0; }
+.steps li span { color: var(--muted); }
+.watch-out { background: var(--pulse-soft); border-radius: 10px; padding: 16px 18px; display: grid; gap: 6px; }
+.watch-out strong { color: var(--pulse); font-family: var(--mono); font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+footer { border-top: 1px solid var(--line); padding-top: 24px; color: var(--muted); font-size: 14px; }
+</style>
+
+<div class="wrap">
+
+  <div class="hero">
+    <p class="eyebrow">Personal build · 10 October 2026</p>
+    <h1>From wrist <span>to web page</span></h1>
+    <p class="lede">Oliver's Xiaomi Watch S1 Active collects steps, sleep and heart rate every day. This project gets that data off the watch, keeps every day of it permanently, and shows it on a private web page.</p>
+    <svg class="trace" viewBox="0 0 1000 120" role="img" aria-label="Heartbeat trace">
+      <path class="base" d="M0 70 H1000"/>
+      <path d="M0 70 H180 L200 70 L215 40 L232 104 L250 14 L268 92 L282 70 H460 L478 70 L492 44 L508 100 L526 22 L544 90 L558 70 H740 L758 70 L772 46 L788 98 L806 28 L824 88 L838 70 H1000"/>
+    </svg>
+    <div class="facts">
+      <span class="chip"><i></i>Steps</span>
+      <span class="chip"><i></i>Sleep</span>
+      <span class="chip"><i></i>Heart rate</span>
+      <span class="chip">Archived hourly</span>
+      <span class="chip">Never deletes a day</span>
+      <span class="chip">Costs £0</span>
+    </div>
+  </div>
+
+  <section>
+    <header>
+      <p class="eyebrow">The data path</p>
+      <h2>Seven hops from the watch to the page</h2>
+      <p class="lede">Xiaomi offers no public API or export for this watch, so the data takes the long way round through Android's Health Connect.</p>
+      <div class="legend"><span><b style="background:var(--pulse)"></b>Watch</span><span><b style="background:var(--phone)"></b>Phone</span><span><b style="background:var(--cloud)"></b>Google cloud</span></div>
+    </header>
+    <ol class="pipe">
+      <li class="stop k-watch"><div><span class="where">Wrist</span><h3>Xiaomi Watch S1 Active</h3><p>Records the raw daily numbers.</p></div></li>
+      <li class="stop k-phone"><div><span class="where">Phone</span><h3>Mi Fitness</h3><p>Xiaomi's app syncs the watch over Bluetooth, then shares steps, sleep and heart rate into Health Connect.</p></div></li>
+      <li class="stop k-phone"><div><span class="where">Phone</span><h3>Health Connect</h3><p>Android's on-device health store. It has no web API, which is why the next hop exists.</p></div></li>
+      <li class="stop k-phone"><div><span class="where">Phone</span><h3>Health Sync</h3><p>The bridge app. It reads Health Connect and writes CSV files to Google Drive on a schedule.</p></div></li>
+      <li class="stop k-cloud"><div><span class="where">Cloud</span><h3>Google Drive</h3><p>CSV files covering rolling windows: today, this week, this month. Older days fall off the end.</p></div></li>
+      <li class="stop k-cloud"><div><span class="where">Cloud</span><h3>Apps Script archive</h3><p>Runs every hour, merges the CSVs into a Google Sheet with one row per day, and never deletes anything. This is the part that makes the history last.</p></div></li>
+      <li class="stop k-cloud"><div><span class="where">Cloud</span><h3>Dashboard web app</h3><p>The same script serves a private page with charts and 7-day, 30-day, 90-day and all-time views.</p></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <header>
+      <p class="eyebrow">How it came together</p>
+      <h2>One afternoon, four steps</h2>
+    </header>
+    <div class="timeline">
+      <div class="moment"><span class="when">Step 1 · Research</span><h3>No front door</h3><p>Checked for a Xiaomi API. There isn't one for this watch, and Mi Fitness has no file export.</p></div>
+      <div class="moment"><span class="when">Step 2 · Route</span><h3>Daily data wins</h3><p>Strava would only cover workouts. Daily steps and sleep meant going through Health Connect.</p></div>
+      <div class="moment"><span class="when">Step 3 · Version 1</span><h3>Three files</h3><p>An archive script, an HTML page and a setup guide. It worked, but it needed links, GitHub and manual column numbers.</p></div>
+      <div class="moment"><span class="when">Step 4 · Version 2</span><h3>One file</h3><p>Everything folded into a single Apps Script that finds its own columns and serves its own page. Tested before handover.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <header>
+      <p class="eyebrow">The files</p>
+      <h2>What each one does</h2>
+    </header>
+    <div class="files">
+      <div class="file current">
+        <span class="name">HealthDashboard.gs</span><span class="status live">Use this one</span>
+        <p>The all-in-one script. Paste it into a Google Sheet's Apps Script editor and it does the whole job.</p>
+        <ul>
+          <li><code>setup()</code> runs the first import and schedules one every hour</li>
+          <li><code>syncAll()</code> reads the CSVs and archives each day</li>
+          <li><code>doGet()</code> serves the dashboard page</li>
+          <li><code>inspectFiles()</code> logs the CSV columns if anything needs fixing</li>
+        </ul>
+      </div>
+      <div class="file">
+        <span class="name">Code.gs</span><span class="status old">Version 1</span>
+        <p>The first archive script. Needed the folder name and column numbers set by hand.</p>
+      </div>
+      <div class="file">
+        <span class="name">index.html</span><span class="status old">Version 1</span>
+        <p>The first dashboard page, hosted separately on GitHub Pages and fed by published CSV links.</p>
+      </div>
+      <div class="file">
+        <span class="name">SETUP.md</span><span class="status old">Version 1</span>
+        <p>Setup guide for the three-file version. The phone steps in it still apply.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <header>
+      <p class="eyebrow">Under the hood</p>
+      <h2>The clever bits</h2>
+    </header>
+    <div class="grid2">
+      <div class="feature"><span class="tag">mergeIntoSheet_</span><h3>Keeps every day</h3><p>New days are added and changed days are updated, so today's step count keeps climbing. Rows are never removed, even after Health Sync's files have moved on.</p></div>
+      <div class="feature"><span class="tag">detectDateCol_ · detectValueCol_</span><h3>Finds its own columns</h3><p>Looks for the column that's mostly dates, then the numeric column whose header mentions steps, sleep or bpm.</p></div>
+      <div class="feature"><span class="tag">toNumber_</span><h3>Reads sleep times</h3><p>Turns durations like <code>7:30</code> into 450 minutes, and copes with <code>72,5</code> as well as <code>72.5</code>.</p></div>
+      <div class="feature"><span class="tag">normaliseDate_</span><h3>Speaks British dates</h3><p>Reads <code>09/10/2026</code> as 9 October, not 10 September, and stores every date as <code>2026-10-09</code>.</p></div>
+      <div class="feature"><span class="tag">syncAll</span><h3>Newest file wins</h3><p>When the day, week and month files overlap, the most recently updated file sets the value for that day.</p></div>
+      <div class="feature"><span class="tag">doGet</span><h3>Private by default</h3><p>Deployed as "Only myself", the page needs Oliver's Google sign-in. No public links to the data.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <header>
+      <p class="eyebrow">What the dashboard looks like</p>
+      <h2>A week of steps</h2>
+    </header>
+    <div class="preview">
+      <div class="top"><h3>Steps</h3><span class="example">Example data, not Oliver's real numbers</span></div>
+      <div class="stats">
+        <div><b>6,214</b>latest (today, so far)</div>
+        <div><b>9,411</b>average steps</div>
+        <div><b>12,480</b>best</div>
+        <div><b>7</b>days</div>
+      </div>
+      <div class="bars-wrap">
+        <svg class="bars" viewBox="0 0 640 220" role="img" aria-label="Example bar chart of daily steps over one week">
+          <line class="grid" x1="56" y1="20" x2="630" y2="20"/>
+          <line class="grid" x1="56" y1="80" x2="630" y2="80"/>
+          <line class="grid" x1="56" y1="140" x2="630" y2="140"/>
+          <line class="grid" x1="56" y1="190" x2="630" y2="190"/>
+          <text x="48" y="24" text-anchor="end">15k</text>
+          <text x="48" y="84" text-anchor="end">10k</text>
+          <text x="48" y="144" text-anchor="end">5k</text>
+          <text x="48" y="194" text-anchor="end">0</text>
+          <!-- scale: 0 at y=190, 15000 at y=20 → 170px per 15000 -->
+          <rect x="72"  y="100.7" width="56" height="89.3"  rx="4"/>
+          <rect x="152" y="48.6"  width="56" height="141.4" rx="4"/>
+          <rect x="232" y="85.8"  width="56" height="104.2" rx="4"/>
+          <rect x="312" y="72.4"  width="56" height="117.6" rx="4"/>
+          <rect x="392" y="94.2"  width="56" height="95.8"  rx="4"/>
+          <rect x="472" y="62.3"  width="56" height="127.7" rx="4"/>
+          <rect x="552" y="119.6" width="56" height="70.4"  rx="4" class="today"/>
+          <text x="100" y="210" text-anchor="middle">4 Oct</text>
+          <text x="180" y="210" text-anchor="middle">5 Oct</text>
+          <text x="260" y="210" text-anchor="middle">6 Oct</text>
+          <text x="340" y="210" text-anchor="middle">7 Oct</text>
+          <text x="420" y="210" text-anchor="middle">8 Oct</text>
+          <text x="500" y="210" text-anchor="middle">9 Oct</text>
+          <text x="580" y="210" text-anchor="middle">10 Oct</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <header>
+      <p class="eyebrow">Getting it live</p>
+      <h2>Tonight's checklist</h2>
+    </header>
+    <ol class="steps">
+      <li><div><strong>Phone:</strong> <span>in Mi Fitness, turn on sharing to Health Connect for steps, sleep and heart rate.</span></div></li>
+      <li><div><strong>Phone:</strong> <span>in Health Sync, set Health Connect as the source and Google Drive CSV as the destination, with automatic sync on.</span></div></li>
+      <li><div><strong>Sheet:</strong> <span>create a Google Sheet, open Extensions → Apps Script, paste <code>HealthDashboard.gs</code> and save.</span></div></li>
+      <li><div><strong>Run:</strong> <span>choose <code>setup</code> and click Run, then approve the permissions.</span></div></li>
+      <li><div><strong>Deploy:</strong> <span>Deploy → New deployment → Web app, as Me, for Only myself. Bookmark the URL on the phone.</span></div></li>
+    </ol>
+    <div class="watch-out">
+      <strong>Watch out</strong>
+      <p>Xiaomi phones close background apps aggressively. Set Mi Fitness and Health Sync to "No restrictions" for battery and turn on Autostart, or days will go missing. If a chart is empty, run <code>inspectFiles</code> and check the log.</p>
+    </div>
+  </section>
+
+  <footer>Built 10 October 2026 for Oliver's Xiaomi Watch S1 Active. Runs on Google Apps Script and Chart.js.</footer>
+</div>
